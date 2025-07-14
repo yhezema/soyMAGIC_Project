@@ -63,7 +63,7 @@ echo "[$(date)] Finished fastp trimming for $parent" >> MAGIC/Assembly/logs/fast
 PARENT=RG46 # Change to the desired parent name 
 
 # Define base directory
-BASE_DIR=MAGIC
+BASE_DIR=/project/def-meskanda/yhezema/MAGIC
 
 # Create necessary directories
 mkdir -p $BASE_DIR/Assembly/trimmed/${PARENT}
