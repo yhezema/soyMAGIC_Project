@@ -1,0 +1,183 @@
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#!/bin/bash
+
+# Create the target directories
+mkdir -p parents gbs # -p to create the directories if they do not exist and avoid the error message if they exist. 
+
+# Identify the directories to move to parents
+parent_dirs=("07-78" "RG11" "X790" "1355" "RG22" "RG23" "Prosper" "RG46")
+
+# Move each parent directory
+for dir in "${parent_dirs[@]}"; do
+    if [ -d "$dir" ]; then
+        mv "$dir" parents/
+        echo "Moved $dir to parents/"
+    else
+        echo "Directory $dir not found"
+    fi
+done
+
+# Move all remaining directories to gbs
+for dir in *; do
+    if [ -d "$dir" ] && [ "$dir" != "parents" ] && [ "$dir" != "gbs" ]; then
+        mv "$dir" gbs/
+        echo "Moved $dir to gbs/"
+    fi
+done
+
+echo "Done organizing directories."
+
+############
+#Run the Quality Control Using fastqc 
+fastqc MAGIC/parents/07-78/*.fastq.gz -o fastqc_reports/ > MAGIC/Assembly/logs/qc_log.txt 
+
+fastqc MAGIC/parents/${parent}/*_R{1,2}.fastq.gz \
+        -o ${project_dir}/qc/raw/ \
+        2>> ${project_dir}/logs/fastqc_errors.txt
+    
+    echo "Completed ${parent} QC" >> ${project_dir}/logs/analysis_log.txt
+done
+
+fastqc MAGIC/parents/${parent}/*_R{1,2}.fastq.gz -o MAGIC/Assembly/qc/ 2>> MAGIC/Assembly/logs/qc_errors_log.txt
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+############################################################################
+#Organize the data
+# Create the target directories
+mkdir -p parents gbs # -p to create the directories if they do not exist and avoid the error message if they exist. 
+
+#Move parents data to parents directory
+mv 07-78 parents/
+mv RG11 parents/
+mv X790 parents/
+mv 1355 parents/
+mv RG22 parents/
+mv RG23 parents/
+mv Prosper parents/    
+mv RG46 parents/ 
+
+#Move GBS data to gbs directory
+mv GBSplate* gbs/
+mv Repool* gbs/
+mv NS.1657.004.D701_R1.fastq gbs/   
+
+############################################################################
+#Check file sizes and modification times
+ls -lh parents/*/*.fastq.gz
+
+#View first 10 lines of 07-78-R1:
+zcat parents/07-78/*_R1.fastq.gz | head -n 10
+
+# Count total reads in a file:
+zcat parents/07-78/*_R1.fastq.gz | echo $(( $(wc -l) / 4 ))
+
+###########################################################################
+#Genome Assembly
+#################
+#!/bin/bash
+
+## Ask for computational resources
+#SBATCH --time=4:00:00
+#SBATCH --mem=50G
+#SBATCH --cpus-per-task=8
+#SBATCH --account=def-meskanda
+
+-------------------------------------------------------------------------------------
+#Create main project directories
+mkdir -pv Assembly/{qc,trimmed,analysis,assemblies,logs}
+-------------------------------------------------------------------------------------
+#Load fastqc
+module load fastqc/0.12.1 StdEnv/2023
+ 
+#Start quality control analysis and create analysis_log File
+for parent in 1355 RG11 RG22 RG23 RG46 X790 07-78; do
+  echo "Starting processing ${parent} QC at $(date)" >> MAGIC/Assembly/logs/qc_log.txt
+  fastqc MAGIC/parents/${parent}/*_R1.fastq.gz MAGIC/parents/${parent}/*_R2.fastq.gz -o MAGIC/Assembly/qc/ 2>> MAGIC/Assembly/logs/qc_errors_log.txt
+  echo "Completed ${parent} QC at $(date)" >> MAGIC/Assembly/logs/qc_log.txt 
+done
+
+##check progress 
+tail MAGIC/Assembly/logs/qc_log.txt #Check completed analysis
+head MAGIC/Assembly/logs/qc_errors_log.txt
+top -u $USER #Check for running fastqc processes
+ls -lh MAGIC/Assembly/qc/ #output
+
+-----------------------------------------------------------------------------------
+##Generate MultiQC report
+
+module load multiqc 
+
+echo "Generating MultiQC report at $(date)" >> MAGIC/Assembly/logs/qc_log.txt
+multiqc MAGIC/Assembly/qc/ -o MAGIC/Assembly/qc/ >> MAGIC/Assembly/logs/multiqc_log.txt 2>&1
+
+echo "MultiQC completed at $(date)" >> MAGIC/Assembly/logs/qc_log.txt   
+
+## Download html files using globus and view them via the web browser
+-----------------------------------------------------------------------------------------
+###Trimming Reads with Trimmomatic
+module load trimmomatic
+
+
+---------------------------------------------------------------------------
+## Ask for computational resources
+salloc --time=4:00:00 --mem=50G --cpus-per-task=4
+----------------------------------------------------------------------------
+##Load modules
+module load fastqc 
+module load multiqc 
+module load trimmomatic
+
+module spider fastqc/0.12.1
+module spider fastp/0.24.0
+module spider spades/4.2.0
+module spider samtools/1.20
+module spider prokka/1.14.5
+-------------------------------------------------------------------------------------
+#Create main project directories
+mkdir -pv Assembly/{qc,trimmed,analysis,assemblies,logs}
+-------------------------------------------------------------------------------------
+#Load fastqc
+module load fastqc/0.12.1 StdEnv/2023
+ 
+#Start quality control analysis and create analysis_log File
+for parent in 1355 RG11 RG22 RG23 RG46 X790 07-78; do
+  echo "Starting processing ${parent} QC at $(date)" >> MAGIC/Assembly/logs/qc_log.txt
+  fastqc MAGIC/parents/${parent}/*_R1.fastq.gz MAGIC/parents/${parent}/*_R2.fastq.gz -o MAGIC/Assembly/qc/ 2>> MAGIC/Assembly/logs/qc_errors_log.txt
+  echo "Completed ${parent} QC at $(date)" >> MAGIC/Assembly/logs/qc_log.txt 
+done
+
+##check progress 
+tail MAGIC/Assembly/logs/qc_log.txt #Check completed analysis
+head MAGIC/Assembly/logs/qc_errors_log.txt
+top -u $USER #Check for running fastqc processes
+ls -lh MAGIC/Assembly/qc/ #output
+
+
+
+
+#Generate MultiQC report
+echo "Generating MultiQC report..." >> MAGIC/Assembly/logs/qc_log.txt
+multiqc MAGIC/Assembly/qc/ \
+    -n multiqc_report \ #Rename output file
+    -o MAGIC/Assembly/qc/ \
+    --interactive \ #enables zoomable plots in the HTML report
+    >> MAGIC/Assembly/logs/multiqc_log.txt 2>&1
+echo "Pipeline completed at $(date)" >> MAGIC/Assembly/logs/qc_log.txt   
+
+## Download html files using globus and view them via the web browser
+-----------------------------------------------------------------------------------------
+#Trimming Reads with Trimmomatic
+
+## Check the Adapter File Path
+find / -name "TruSeq3-PE-2.fa" 2>/dev/null
+
+## Run the trimming with the updated Adapter file path
+java -jar $EBROOTTRIMMOMATIC/trimmomatic-0.39.jar PE \
+    /home/yhezema/scratch/Assignment_3/Data/136x2_R1.fastq /home/yhezema/scratch/Assignment_3/Data/136x2_R2.fastq \
+    /home/yhezema/scratch/Assignment_3/Analysis/136x2_R1_trimmed_pe.fastq /home/yhezema/scratch/Assignment_3/Analysis/136x2_R1_trimmed_se.fastq \
+    /home/yhezema/scratch/Assignment_3/Analysis/136x2_R2_trimmed_pe.fastq /home/yhezema/scratch/Assignment_3/Analysis/136x2_R2_trimmed_se.fastq \
+    ILLUMINACLIP:/cvmfs/soft.mugqic/CentOS6/software/trimmomatic/Trimmomatic-0.39/adapters/TruSeq3-PE-2.fa:2:30:10 \
+    LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:50 
+-----------------------------------------------------------------------------
+
+
+

@@ -1,0 +1,96 @@
+#### Data Trimming using Fastp ####
+---------------------------------
+## Fastp - All parents########
+---------------------------------
+#!/bin/bash
+#SBATCH --job-name=fastp_trim_%A_%a
+#SBATCH --time=3:00:00
+#SBATCH --mem=24G
+#SBATCH --cpus-per-task=4
+#SBATCH --array=0-6
+
+# List of parents
+parents=(1355 Prosper RG11 RG22 RG23 RG46 X790)
+parent=${parents[$SLURM_ARRAY_TASK_ID]}
+
+# Create output directories
+mkdir -p MAGIC/Assembly/trimmed/${parent}
+mkdir -p MAGIC/Assembly/logs/fastp_reports
+
+# Find input FASTQ files
+R1=$(find "MAGIC/parents/${parent}" -type f -name "*_R1.fastq.gz" ! -name "._*")
+R2=$(find "MAGIC/parents/${parent}" -type f -name "*_R2.fastq.gz" ! -name "._*")
+
+# Load fastq
+module load StdEnv/2023 fastp/0.24.0
+
+
+echo "[$(date)] Starting fastp trimming for $parent" >> MAGIC/Assembly/logs/fastp_trimming_log.txt
+
+# Run fastp
+fastp \
+  -i "$R1" \
+  -I "$R2" \
+  -o MAGIC/Assembly/trimmed/${parent}/${parent}_R1_trimmed_pe.fastq.gz \
+  -O MAGIC/Assembly/trimmed/${parent}/${parent}_R2_trimmed_pe.fastq.gz \
+  --unpaired1 MAGIC/Assembly/trimmed/${parent}/${parent}_R1_trimmed_se.fastq.gz \
+  --unpaired2 MAGIC/Assembly/trimmed/${parent}/${parent}_R2_trimmed_se.fastq.gz \
+  --detect_adapter_for_pe \
+  --trim_poly_g \
+  --trim_poly_x \
+  --cut_tail \
+  --cut_window_size 4 \
+  --cut_mean_quality 20 \
+  --length_required 50 \
+  --thread 4 \
+  --html MAGIC/Assembly/logs/fastp_reports/${parent}_report.html \
+  --json MAGIC/Assembly/logs/fastp_reports/${parent}_report.json \
+  >> MAGIC/Assembly/logs/fastp_trimming_log.txt 2>> MAGIC/Assembly/logs/fastp_errors.log
+
+echo "[$(date)] Finished fastp trimming for $parent" >> MAGIC/Assembly/logs/fastp_trimming_log.txt
+
+------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+--------------------------------------
+## Fastp se of 07-78_R1######
+--------------------------------------
+#!/bin/bash
+#SBATCH --job-name=fastp_07-78
+#SBATCH --time=3:00:00
+#SBATCH --mem=24G
+#SBATCH --cpus-per-task=4
+
+# Create output directories
+mkdir -p MAGIC/Assembly/trimmed/07-78
+mkdir -p MAGIC/Assembly/logs/fastp_reports
+
+# Load fastp
+module load StdEnv/2023 fastp/0.24.0
+
+echo "[$(date)] Starting fastp trimming for 07-78" >> MAGIC/Assembly/logs/fastp_trimming_log.txt
+
+fastp \
+  -i MAGIC/parents/07-78/NS.1509.002.D702---D502.07-78_R1.fastq.gz \
+  -o MAGIC/Assembly/trimmed/07-78/07-78_R1_trimmed_se.fastq.gz \
+  --trim_poly_g \
+  --trim_poly_x \
+  --cut_tail \
+  --cut_window_size 4 \
+  --cut_mean_quality 20 \
+  --length_required 50 \
+  --thread 4 \
+  --html MAGIC/Assembly/logs/fastp_reports/07-78_fastp.html \
+  --json MAGIC/Assembly/logs/fastp_reports/07-78_fastp.json \
+  >> MAGIC/Assembly/logs/fastp_trimming_log.txt 2>> MAGIC/Assembly/logs/fastp_errors.log
+
+echo "[$(date)] Finished fastp trimming for 07-78" >> MAGIC/Assembly/logs/fastp_trimming_log.txt
+
+--------------------------------------------------------------------------------------------------
+##Monitor the queue
+watch squeue -u $USER
+
+##Check job status
+squeue -u $USER
+
+

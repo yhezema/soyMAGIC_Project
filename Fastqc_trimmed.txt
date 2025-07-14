@@ -1,0 +1,53 @@
+# Fastqc all parents_trimmed  
+------------------------
+#!/bin/bash
+#SBATCH --job-name=fastqc_trimmed
+#SBATCH --time=2:00:00
+#SBATCH --mem=8G
+#SBATCH --cpus-per-task=4
+#SBATCH --array=0-5
+
+# Define parent list
+PARENTS=(1355 Prosper RG11 RG22 RG23 RG46 X790)
+PARENT=${PARENTS[$SLURM_ARRAY_TASK_ID]}
+
+# Load fastqc
+module load fastqc/0.12.1 StdEnv/2023
+
+
+echo "Starting processing ${PARENT} QC_Trimmed at $(date)" >> MAGIC/Assembly/logs/qc_trimmed_log.txt
+
+# Run fastqc
+fastqc \
+  MAGIC/Assembly/trimmed/${PARENT}/${PARENT}_R1_trimmed_pe.fastq.gz \
+  MAGIC/Assembly/trimmed/${PARENT}/${PARENT}_R1_trimmed_se.fastq.gz \
+  MAGIC/Assembly/trimmed/${PARENT}/${PARENT}_R2_trimmed_pe.fastq.gz \
+  MAGIC/Assembly/trimmed/${PARENT}/${PARENT}_R2_trimmed_se.fastq.gz \
+  -o MAGIC/Assembly/qc/trimmed/ \
+  2>> MAGIC/Assembly/logs/qc_trimmed_errors_log.txt
+
+echo "Completed ${PARENT} QC at $(date)" >> MAGIC/Assembly/logs/qc_trimmed_log.txt
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+# Fastqc 07-78 se parent_trimmed  
+------------------------
+#!/bin/bash
+#SBATCH --job-name=fastqc_07-78
+#SBATCH --time=1:00:00
+#SBATCH --mem=4G
+#SBATCH --cpus-per-task=2
+#SBATCH --account=def-meskanda
+
+# Load FastQC module
+module load fastqc/0.12.1 StdEnv/2023
+
+# Define file
+INPUT_FILE=MAGIC/Assembly/trimmed/07-78/07-78_R1_trimmed_se.fastq.gz
+OUTPUT_DIR=MAGIC/Assembly/qc/trimmed/
+
+echo "Running FastQC on $INPUT_FILE at $(date)" >> MAGIC/Assembly/logs/qc_trimmed_log.txt
+
+# Run FastQC
+fastqc "$INPUT_FILE" -o "$OUTPUT_DIR" 2>> MAGIC/Assembly/logs/qc_trimmed_errors_log.txt
+
+echo "Completed FastQC on $INPUT_FILE at $(date)" >> MAGIC/Assembly/logs/qc_trimmed_log.txt

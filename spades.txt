@@ -1,0 +1,31 @@
+##Rune spades for one parent/time
+-------------------------------------
+#!/bin/bash
+#SBATCH --job-name=spades_assembly_one_parent
+#SBATCH --time=16:00:00
+#SBATCH --mem=400G
+#SBATCH --cpus-per-task=16
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+
+# Load SPAdes
+module load spades
+
+# Set parent name manually
+PARENT=X790  
+
+# Define base directory
+BASE_DIR=/project/def-meskanda/yhezema/MAGIC
+
+echo "Starting assembly for $PARENT at $(date)" >> $BASE_DIR/Assembly/logs/spades/spades_log.txt
+
+# Run SPAdes
+spades.py \
+  -1 $BASE_DIR/Assembly/trimmed/${PARENT}/${PARENT}_R1_trimmed_pe.fastq.gz \
+  --s1 $BASE_DIR/Assembly/trimmed/${PARENT}/${PARENT}_R1_trimmed_se.fastq.gz \
+  -2 $BASE_DIR/Assembly/trimmed/${PARENT}/${PARENT}_R2_trimmed_pe.fastq.gz \
+  --s2 $BASE_DIR/Assembly/trimmed/${PARENT}/${PARENT}_R2_trimmed_se.fastq.gz \
+  -o $BASE_DIR/Assembly/assemblies/${PARENT} \
+  -t 16 -m 400 >> $BASE_DIR/Assembly/logs/spades/${PARENT}_spades.log 2>&1
+
+echo "Finished assembly for $PARENT at $(date)" >> $BASE_DIR/Assembly/logs/spades/spades_log.txt
