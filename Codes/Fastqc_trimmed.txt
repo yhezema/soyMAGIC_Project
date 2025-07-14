@@ -29,7 +29,39 @@ fastqc \
 echo "Completed ${PARENT} QC at $(date)" >> MAGIC/Assembly/logs/qc_trimmed_log.txt
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
-# Fastqc 07-78 se parent_trimmed  
+# Fastqc RG46_trimmed_pe
+------------------------
+#!/bin/bash 
+#SBATCH --job-name=fastqc_RG46
+#SBATCH --time=2:00:00
+#SBATCH --mem=8G
+#SBATCH --cpus-per-task=4
+
+# Define parent name
+PARENT=RG46
+
+# Load fastqc module
+module load fastqc/0.12.1 StdEnv/2023
+
+# Create output and log directories if they don't exist
+mkdir -p MAGIC/Assembly/qc/trimmed
+mkdir -p MAGIC/Assembly/logs
+
+echo "Starting processing ${PARENT} QC_Trimmed at $(date)" >> MAGIC/Assembly/logs/qc_trimmed_log.txt
+
+# Run fastqc
+fastqc \
+  MAGIC/Assembly/trimmed/${PARENT}/${PARENT}_R1_trimmed_pe.fastq.gz \
+  MAGIC/Assembly/trimmed/${PARENT}/${PARENT}_R1_trimmed_se.fastq.gz \
+  MAGIC/Assembly/trimmed/${PARENT}/${PARENT}_R2_trimmed_pe.fastq.gz \
+  MAGIC/Assembly/trimmed/${PARENT}/${PARENT}_R2_trimmed_se.fastq.gz \
+  -o MAGIC/Assembly/qc/trimmed/ \
+  2>> MAGIC/Assembly/logs/qc_trimmed_errors_log.txt
+
+echo "Completed ${PARENT} QC at $(date)" >> MAGIC/Assembly/logs/qc_trimmed_log.txt
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+# Fastqc 07-78_trimmed_se  
 ------------------------
 #!/bin/bash
 #SBATCH --job-name=fastqc_07-78
