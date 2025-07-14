@@ -49,10 +49,52 @@ fastp \
 
 echo "[$(date)] Finished fastp trimming for $parent" >> MAGIC/Assembly/logs/fastp_trimming_log.txt
 
-------------------------------------------------------------------------
--------------------------------------------------------------------------
-
+------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------
+## Fastp for one parent
 --------------------------------------
+#!/bin/bash
+#SBATCH --job-name=fastp_RG46
+#SBATCH --time=3:00:00
+#SBATCH --mem=24G
+#SBATCH --cpus-per-task=4
+
+# Define parent name
+PARENT=RG46 # Change to the desired parent name 
+
+# Define base directory
+BASE_DIR=MAGIC
+
+# Create necessary directories
+mkdir -p $BASE_DIR/Assembly/trimmed/${PARENT}
+mkdir -p $BASE_DIR/Assembly/logs/fastp_reports
+
+# Load fastp module
+module load StdEnv/2023 fastp/0.24.0
+
+echo "[$(date)] Starting fastp trimming for ${PARENT}" >> $BASE_DIR/Assembly/logs/fastp_trimming_log.txt
+
+fastp \
+  -i $BASE_DIR/parents/${PARENT}/NS.1509.002.D702---D502.${PARENT}_R1.fastq.gz \
+  -I $BASE_DIR/parents/${PARENT}/NS.1509.002.D702---D502.${PARENT}_R2.fastq.gz \
+  -o $BASE_DIR/Assembly/trimmed/${PARENT}/${PARENT}_R1_trimmed_pe.fastq.gz \
+  -O $BASE_DIR/Assembly/trimmed/${PARENT}/${PARENT}_R2_trimmed_pe.fastq.gz \
+  --unpaired1 $BASE_DIR/Assembly/trimmed/${PARENT}/${PARENT}_R1_trimmed_se.fastq.gz \
+  --unpaired2 $BASE_DIR/Assembly/trimmed/${PARENT}/${PARENT}_R2_trimmed_se.fastq.gz \
+  --trim_poly_g \
+  --trim_poly_x \
+  --cut_tail \
+  --cut_window_size 4 \
+  --cut_mean_quality 20 \
+  --length_required 50 \
+  --thread 4 \
+  --html $BASE_DIR/Assembly/logs/fastp_reports/${PARENT}_fastp.html \
+  --json $BASE_DIR/Assembly/logs/fastp_reports/${PARENT}_fastp.json \
+  >> $BASE_DIR/Assembly/logs/fastp_trimming_log.txt 2>> $BASE_DIR/Assembly/logs/fastp_errors.log
+
+echo "[$(date)] Finished fastp trimming for ${PARENT}" >> $BASE_DIR/Assembly/logs/fastp_trimming_log.txt
+--------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------
 ## Fastp se of 07-78_R1######
 --------------------------------------
 #!/bin/bash
