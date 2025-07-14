@@ -1,0 +1,36 @@
+# Organize the data
+-----------------------
+# Create the target directories
+mkdir -p parents gbs   # -p to create the directories if they do not exist and avoid the error message if they exist. 
+
+# Move parents data to parents directory
+mv 07-78 parents/
+mv RG11 parents/
+mv X790 parents/
+mv 1355 parents/
+mv RG22 parents/
+mv RG23 parents/
+mv Prosper parents/    
+mv RG46 parents/ 
+
+# Move GBS data to gbs directory
+mv GBSplate* gbs/
+mv Repool* gbs/
+mv NS.1657.004.D701_R1.fastq gbs/   
+
+# Create main project directories
+mkdir -pv Assembly/{qc,trimmed,analysis,assemblies,logs}
+
+
+############################################################################
+#Check file sizes and modification times
+ls -lh parents/*/*.fastq.gz
+
+# View first 50 lines of 07-78-R1:
+zcat parents/07-78/*_R1.fastq.gz | head -n 50
+
+# Count total reads in a file:
+zcat parents/07-78/*_R1.fastq.gz | echo $(( $(wc -l) / 4 ))
+
+###########################################################################
+
