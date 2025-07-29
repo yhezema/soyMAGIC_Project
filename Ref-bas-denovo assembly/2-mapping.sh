@@ -157,13 +157,6 @@ samtools index "$WORK/${parent}_mapped_all.bam" 2>> "$LOG"
 
 echo "[Step 2.3] $parent index completed successfully at [$(date)]" >> "$LOG"
 
-# ========= STEP 2.3: Index sorted aligned Reads =========
-echo "[Step 2.3] $parent index started at [$(date)]" >> "$LOG"
-
-samtools index "$WORK/${parent}_mapped_all.bam" 2>> "$LOG"
-
-echo "[Step 2.3] $parent index completed successfully at [$(date)]" >> "$LOG"
-
 #=============================================================================
 #-----------------------------------------------------------------------------
 #=============================================================================
@@ -250,7 +243,7 @@ samtools view -bf 0x2 "$WORK/${parent}_mapped_filtered.bam" \
 
 # ========= STEP 2.8: Detect blocks =========
 echo "[Step 2.8] $parent Detecting blocks with coverage >= 10 and merge distance 300 started at $(date)" >> "$LOG"
-awk '$4 >= 10' "$WORK/${parent}_coverage.bedgraph" > "$WORK/${parent}_coverage_filtered.bedgraph" 2>> "$LOG"
+awk '$4 >= 10' "$WORK/${parent}_coverage_paired.bedgraph" > "$WORK/${parent}_coverage_filtered.bedgraph" 2>> "$LOG"
 bedtools merge -i "$WORK/${parent}_coverage_filtered.bedgraph" -d 300 -c 4 -o mean > "$WORK/${parent}_blocks.txt" 2>> "$LOG"
 
 # ========= STEP 2.9: Create superblocks =========
