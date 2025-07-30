@@ -239,7 +239,7 @@ samtools view -bf 0x2 "$WORK/${parent}_mapped_filtered.bam" \
   | samtools sort -n -@4 \
   | bedtools bamtobed -i - -bedpe \
   | awk '$1==$4' | cut -f1,2,6 | sort -k1,1 \
-  | bedtools genomecov -i - -bga -g "$REF_GENOME".fai > "$WORK/${parent}_coverage_paired.bedgraph" 2>> "$LOG"
+  | bedtools genomecov -i - -bga -g "${REF_GENOME}".fai > "$WORK/${parent}_coverage_paired.bedgraph" 2>> "$LOG"
 
 # ========= STEP 2.8: Detect blocks =========
 echo "[Step 2.8] $parent Detecting blocks with coverage >= 10 and merge distance 300 started at $(date)" >> "$LOG"
