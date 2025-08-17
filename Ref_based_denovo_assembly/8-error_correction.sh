@@ -115,7 +115,7 @@ samtools index "$bam_filtered"
 echo "Quality filtered reads statistics:" >> "$ANALYSIS_LOG"
 samtools flagstat "$bam_filtered" >> "$ANALYSIS_LOG"
 
-echo "===== ERROR CORRECTION COMPLETED for ${parent} =====" | tee -a "$ANALYSIS_LOG"
+echo "===== ERROR MAPPING COMPLETED for ${parent} =====" | tee -a "$ANALYSIS_LOG"
 date | tee -a "$ANALYSIS_LOG"
 
 #=========================================================================
@@ -315,3 +315,4 @@ mkdir -p $GAPCLOSING
 cd $CORRECTION/corrected_round3_merged.fa $GAPCLOSING
 #====================================================================
 #====================================================================
+
