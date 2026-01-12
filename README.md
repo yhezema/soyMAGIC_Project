@@ -10,6 +10,6 @@ SoyMAGIC is a novel soybean population derived from eight diverse parental lines
  6-supercontigs mapping
  7-de novo assembly of unmapped reads
  8-error correction
- 9-gap closing
+ 9-gap closing.
 
 <img width="974" height="880" alt="image" src="https://github.com/user-attachments/assets/2865eafa-ba67-48f9-8495-b8181aa5a796" />
